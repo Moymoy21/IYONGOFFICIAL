@@ -190,7 +190,7 @@ local function CreateAllCodesBox()
     btn.Size = UDim2.new(0.3, 0, 0.6, 0)
     btn.Position = UDim2.new(0.67, 0, 0.2, 0)
     btn.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-    btn.Text = "GET ALL"
+    btn.Text = "GET ALL NUMBER"
     btn.Font = Enum.Font.GothamBold
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
     
