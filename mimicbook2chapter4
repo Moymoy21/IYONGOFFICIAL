@@ -569,18 +569,33 @@ end) -- Dito nagsasara ang createTab
 
 
 RunService.Heartbeat:Connect(function()
-    -- Check kung naka-ON ang toggle at kung buhay ang player
-    if not _G.AutoSafeTP or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+    -- 1. I-check kung naka-ON ang toggle
+    if not _G.AutoSafeTP then return end
     
-    local myPos = player.Character.HumanoidRootPart.Position
+    -- 2. I-check ang player
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    local myPos = char.HumanoidRootPart.Position
+
+    -- 3. Loop sa mga monster
     for _, monsterName in pairs(targetMonsters) do
         local monster = workspace:FindFirstChild(monsterName)
+        
+        -- Dito natin i-print kung nakikita ng script ang monster
         if monster and monster:FindFirstChild("HumanoidRootPart") then
-            local distance = (monster.HumanoidRootPart.Position - myPos).Magnitude
-            if distance < DETECTION_RANGE then
-                player.Character.HumanoidRootPart.CFrame = SAFE_CFRAME
-                task.wait(1.5)
+            local dist = (monster.HumanoidRootPart.Position - myPos).Magnitude
+            
+            -- Debug: I-print ang distansya sa console para makita natin kung gumagana
+            -- print(monsterName .. " distance: " .. math.floor(dist)) 
+            
+            if dist < DETECTION_RANGE then
+                char.HumanoidRootPart.CFrame = SAFE_CFRAME
+                print("TELEPORT TRIGGERED by: " .. monsterName)
+                task.wait(2)
             end
+        else
+            -- Kung hindi makita, baka mali ang pangalan
+            -- print("Monster not found in Workspace: " .. monsterName)
         end
     end
 end)
