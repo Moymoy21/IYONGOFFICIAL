@@ -266,6 +266,7 @@ createTab("ESP", function()
     local targetMonsters = {["Tenome"] = true, ["Tsukiya"] = true, ["Rin"] = true}
     local activeObjects = {}
 
+    -- // I-modify ang createESP para maging "Dynamic" (nagbabago)
     local function createESP(model)
         local h = Instance.new("Highlight", model)
         h.FillColor = Color3.fromRGB(255, 50, 50)
@@ -279,6 +280,7 @@ createTab("ESP", function()
         bg.AlwaysOnTop = true
         
         local lbl = Instance.new("TextLabel", bg)
+        lbl.Name = "DistanceLabel" -- Binigyan natin ng pangalan para madaling hanapin
         lbl.Size = UDim2.new(1, 0, 1, 0)
         lbl.BackgroundTransparency = 1
         lbl.TextColor3 = Color3.new(1, 1, 1)
@@ -566,51 +568,33 @@ end) -- Dito nagsasara ang createTab
 
 -- Ilagay ang values nang manual para hindi siya mag-nil
 _G.AutoSafeTP = false
-local SAFE_CFRAME = CFrame.new(-1160.7, -149.3, -1011.8) -- Pinayak ko para sigurado
-
-
--- // I-define ang listahan sa loob mismo o bago ang loop para sigurado
-local targetMonsters = {"Tenome", "Tsukiya", "Rin"} -- Siguraduhing nandito ito!
-
--- // I-setup ang Detection Range
+-- // CONFIGURATION (Iwanan mo ito sa taas)
 local DETECTION_RANGE = 50 
+local SAFE_CFRAME = CFrame.new(-1160.70581, -149.304581, -1011.77954, 0.991296649, -7.29874339e-09, 0.131647274, 8.19504553e-09, 1, -6.26657481e-09, -0.131647274, 7.29089011e-09, 0.991296649)
 
--- Ilagay ito sa labas ng kahit anong tab
-local function createMonsterESP(monster)
-    if not monster:FindFirstChild("ESP_Tag") then
-        local billboard = Instance.new("BillboardGui", monster:FindFirstChild("HumanoidRootPart"))
-        billboard.Name = "ESP_Tag"
-        billboard.Size = UDim2.new(0, 200, 0, 50)
-        billboard.AlwaysOnTop = true
-        local label = Instance.new("TextLabel", billboard)
-        label.Size = UDim2.new(1, 0, 1, 0)
-        label.BackgroundTransparency = 1
-        label.TextColor3 = Color3.new(1, 0, 0) -- Pula
-        label.TextScaled = true
-    end
-end
-
+-- // HEARTBEAT LOOP (Ito lang ang kailangan mo sa baba)
 RunService.Heartbeat:Connect(function()
+    -- I-check kung naka-ON ang Auto Safe TP at kung buhay ang player
     if not _G.AutoSafeTP then return end
     local char = player.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     
-    for _, monsterName in pairs(targetMonsters) do
+    -- I-loop ang monsters
+    for _, monsterName in pairs({"Tenome", "Tsukiya", "Rin"}) do
         local monster = workspace:FindFirstChild(monsterName)
+        
+        -- Dito natin hinahanap yung ESP na ginawa ng "Toggle Monster ESP" button mo
         if monster and monster:FindFirstChild("HumanoidRootPart") then
-            -- Siguraduhin na may ESP label
-            createMonsterESP(monster)
-            
+            local espTag = monster:FindFirstChild("ESP_NameTag") -- Ito yung pangalan sa luma mong script
             local dist = (monster.HumanoidRootPart.Position - char.HumanoidRootPart.Position).Magnitude
             
-            -- I-update ang text
-            local label = monster.HumanoidRootPart:FindFirstChild("ESP_Tag"):FindFirstChild("TextLabel")
-            if label then
-                label.Text = monsterName .. " | " .. math.floor(dist) .. " studs"
+            -- I-update ang text kung nakita ang ESP Tag
+            if espTag and espTag:FindFirstChild("DistanceLabel") then
+                espTag.DistanceLabel.Text = monsterName .. " | " .. math.floor(dist) .. " studs"
             end
             
             -- Teleport Logic
-            if dist <= 50 then
+            if dist <= DETECTION_RANGE then
                 char.HumanoidRootPart.CFrame = SAFE_CFRAME
                 task.wait(1.5)
             end
