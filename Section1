@@ -1,0 +1,10 @@
+createTab("SECTION1", function()
+    
+    CreateSectionTitle("Teleport Locations")
+    CreateTP("SKIP CAVE", CFrame.new(-1235.36902, 4.00000048, -2943.79761, 0.0479142852, 0, -0.998851478, 0, 1, 0, 0.998851478, 0, 0.0479142852))
+    CreateTP("Starter Cinematic", CFrame.new(-1155.50256, 4.00000095, -2934.6958))
+    CreateTP("Skip to White Door", CFrame.new(4944.86719, -64.27565, 1206.07715))
+    CreateTP("Floor 6 BOSS NPC", CFrame.new(4449.49902, 43.9929123, 1659.43604))
+   CreateSectionTitle("All Floor Codes")
+   CreateAllCodesBox()
+end)
