@@ -568,8 +568,11 @@ end) -- Dito nagsasara ang createTab
 
 
 
+-- // I-define ang listahan sa loob mismo o bago ang loop para sigurado
+local targetMonsters = {"Tenome", "Tsukiya", "Rin"} -- Siguraduhing nandito ito!
+
 RunService.Heartbeat:Connect(function()
-    -- 1. I-check kung naka-ON ang toggle
+    -- 1. I-check ang toggle (Siguraduhing naka-initialize ang _G)
     if not _G.AutoSafeTP then return end
     
     -- 2. I-check ang player
@@ -577,25 +580,19 @@ RunService.Heartbeat:Connect(function()
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     local myPos = char.HumanoidRootPart.Position
 
-    -- 3. Loop sa mga monster
-    for _, monsterName in pairs(targetMonsters) do
-        local monster = workspace:FindFirstChild(monsterName)
-        
-        -- Dito natin i-print kung nakikita ng script ang monster
-        if monster and monster:FindFirstChild("HumanoidRootPart") then
-            local dist = (monster.HumanoidRootPart.Position - myPos).Magnitude
+    -- 3. Siguraduhin na ang targetMonsters ay isang table
+    if type(targetMonsters) == "table" then
+        for _, monsterName in pairs(targetMonsters) do
+            local monster = workspace:FindFirstChild(monsterName)
             
-            -- Debug: I-print ang distansya sa console para makita natin kung gumagana
-            -- print(monsterName .. " distance: " .. math.floor(dist)) 
-            
-            if dist < DETECTION_RANGE then
-                char.HumanoidRootPart.CFrame = SAFE_CFRAME
-                print("TELEPORT TRIGGERED by: " .. monsterName)
-                task.wait(2)
+            if monster and monster:FindFirstChild("HumanoidRootPart") then
+                local dist = (monster.HumanoidRootPart.Position - myPos).Magnitude
+                
+                if dist < DETECTION_RANGE then
+                    char.HumanoidRootPart.CFrame = SAFE_CFRAME
+                    task.wait(1.5)
+                end
             end
-        else
-            -- Kung hindi makita, baka mali ang pangalan
-            -- print("Monster not found in Workspace: " .. monsterName)
         end
     end
 end)
