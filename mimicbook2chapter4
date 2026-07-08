@@ -267,6 +267,7 @@ createTab("ESP", function()
     local activeObjects = {}
 
     -- // I-modify ang createESP para maging "Dynamic" (nagbabago)
+        -- // I-REPLACE MO ANG LUMANG createESP NG ITO //
     local function createESP(model)
         local h = Instance.new("Highlight", model)
         h.FillColor = Color3.fromRGB(255, 50, 50)
@@ -274,23 +275,24 @@ createTab("ESP", function()
         h.Adornee = model
         
         local bg = Instance.new("BillboardGui", model)
-        bg.Name = "ESP_NameTag"
+        bg.Name = "ESP_NameTag" -- Mahalaga ito
         bg.Size = UDim2.new(0, 200, 0, 50)
         bg.StudsOffset = Vector3.new(0, 3, 0)
         bg.AlwaysOnTop = true
         
         local lbl = Instance.new("TextLabel", bg)
-        lbl.Name = "DistanceLabel" -- Binigyan natin ng pangalan para madaling hanapin
+        lbl.Name = "DistanceLabel" -- Mahalaga ito para ma-update ng Heartbeat
         lbl.Size = UDim2.new(1, 0, 1, 0)
         lbl.BackgroundTransparency = 1
         lbl.TextColor3 = Color3.new(1, 1, 1)
         lbl.TextStrokeTransparency = 0
         lbl.Font = Enum.Font.GothamBold
-        lbl.Text = model.Name
+        lbl.Text = model.Name -- Dito mag-uumpisa, pero papalitan ng Heartbeat
         
         table.insert(activeObjects, h)
         table.insert(activeObjects, bg)
     end
+
 
     espBtn.MouseButton1Click:Connect(function()
         espEnabled = not espEnabled
@@ -573,32 +575,33 @@ local DETECTION_RANGE = 50
 local SAFE_CFRAME = CFrame.new(-1160.70581, -149.304581, -1011.77954, 0.991296649, -7.29874339e-09, 0.131647274, 8.19504553e-09, 1, -6.26657481e-09, -0.131647274, 7.29089011e-09, 0.991296649)
 
 -- // HEARTBEAT LOOP (Ito lang ang kailangan mo sa baba)
+-- // ITO ANG NAG-UUPDATE NG STUDS (Dapat nasa pinaka-ibaba ng file)
 RunService.Heartbeat:Connect(function()
-    -- I-check kung naka-ON ang Auto Safe TP at kung buhay ang player
     if not _G.AutoSafeTP then return end
     local char = player.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-    
-    -- I-loop ang monsters
+    local myPos = char.HumanoidRootPart.Position
+
     for _, monsterName in pairs({"Tenome", "Tsukiya", "Rin"}) do
         local monster = workspace:FindFirstChild(monsterName)
-        
-        -- Dito natin hinahanap yung ESP na ginawa ng "Toggle Monster ESP" button mo
-        if monster and monster:FindFirstChild("HumanoidRootPart") then
-            local espTag = monster:FindFirstChild("ESP_NameTag") -- Ito yung pangalan sa luma mong script
-            local dist = (monster.HumanoidRootPart.Position - char.HumanoidRootPart.Position).Magnitude
-            
-            -- I-update ang text kung nakita ang ESP Tag
-            if espTag and espTag:FindFirstChild("DistanceLabel") then
-                espTag.DistanceLabel.Text = monsterName .. " | " .. math.floor(dist) .. " studs"
-            end
-            
-            -- Teleport Logic
-            if dist <= DETECTION_RANGE then
-                char.HumanoidRootPart.CFrame = SAFE_CFRAME
-                task.wait(1.5)
+        -- Hahanapin niya yung "ESP_NameTag" na ginawa ng button mo
+        if monster and monster:FindFirstChild("ESP_NameTag") then
+            local root = monster:FindFirstChild("HumanoidRootPart") or monster:FindFirstChildWhichIsA("BasePart")
+            if root then
+                local dist = (root.Position - myPos).Magnitude
+                
+                -- Update Text
+                local lbl = monster.ESP_NameTag:FindFirstChild("DistanceLabel")
+                if lbl then
+                    lbl.Text = monsterName .. " | " .. math.floor(dist) .. " studs"
+                end
+                
+                -- Teleport
+                if dist <= 50 then
+                    char.HumanoidRootPart.CFrame = CFrame.new(-1160.70581, -149.304581, -1011.77954, 0.991296649, -7.29874339e-09, 0.131647274, 8.19504553e-09, 1, -6.26657481e-09, -0.131647274, 7.29089011e-09, 0.991296649)
+                    task.wait(1.5)
+                end
             end
         end
     end
 end)
-
