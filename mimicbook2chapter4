@@ -95,43 +95,9 @@ local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 _G.AutoSafeTP = false -- Dito natin ilalagay ang status (ON o OFF)
 
-RunService.Heartbeat:Connect(function()
-    -- Check kung naka-ON ang toggle at kung buhay ang player
-    if not _G.AutoSafeTP or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
-    
-    local myPos = player.Character.HumanoidRootPart.Position
-    for _, monsterName in pairs(targetMonsters) do
-        local monster = workspace:FindFirstChild(monsterName)
-        if monster and monster:FindFirstChild("HumanoidRootPart") then
-            local distance = (monster.HumanoidRootPart.Position - myPos).Magnitude
-            if distance < DETECTION_RANGE then
-                player.Character.HumanoidRootPart.CFrame = SAFE_CFRAME
-                task.wait(1.5)
-            end
-        end
-    end
-end)
 
-createTab("Safety", function()
-    local toggleSafeTp = Instance.new("TextButton", rightScroll)
-    toggleSafeTp.Size = UDim2.new(1, -20, 0, 40)
-    toggleSafeTp.BackgroundColor3 = Color3.fromRGB(255, 100, 100) -- Red initially
-    toggleSafeTp.Text = "Auto-Safe TP: OFF"
-    toggleSafeTp.Font = Enum.Font.GothamBold
-    Instance.new("UICorner", toggleSafeTp).CornerRadius = UDim.new(0, 8)
-    
-    toggleSafeTp.MouseButton1Click:Connect(function()
-        _G.AutoSafeTP = not _G.AutoSafeTP
-        
-        if _G.AutoSafeTP then
-            toggleSafeTp.Text = "Auto-Safe TP: ON"
-            toggleSafeTp.BackgroundColor3 = Color3.fromRGB(100, 255, 100) -- Green
-        else
-            toggleSafeTp.Text = "Auto-Safe TP: OFF"
-            toggleSafeTp.BackgroundColor3 = Color3.fromRGB(255, 100, 100) -- Red
-        end
-    end)
-end)
+
+
 
 
 local function AutoWalkToPath(cframePoints)
@@ -398,6 +364,29 @@ createTab("ESP", function()
 end) -- <--- Dito nagsasara ang mismong createTab
 
 
+createTab("Safety", function()
+    local toggleSafeTp = Instance.new("TextButton", rightScroll)
+    toggleSafeTp.Size = UDim2.new(1, -20, 0, 40)
+    toggleSafeTp.BackgroundColor3 = Color3.fromRGB(255, 100, 100) -- Red initially
+    toggleSafeTp.Text = "Auto-Safe TP: OFF"
+    toggleSafeTp.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", toggleSafeTp).CornerRadius = UDim.new(0, 8)
+    
+    toggleSafeTp.MouseButton1Click:Connect(function()
+        _G.AutoSafeTP = not _G.AutoSafeTP
+        
+        if _G.AutoSafeTP then
+            toggleSafeTp.Text = "Auto-Safe TP: ON"
+            toggleSafeTp.BackgroundColor3 = Color3.fromRGB(100, 255, 100) -- Green
+        else
+            toggleSafeTp.Text = "Auto-Safe TP: OFF"
+            toggleSafeTp.BackgroundColor3 = Color3.fromRGB(255, 100, 100) -- Red
+        end
+    end)
+end)
+
+
+
 
 createTab("Coin TP", function()
     local container = rightScroll -- Dito natin ilalagay ang listahan
@@ -575,3 +564,23 @@ CFrame.new(-3268.16968, -186.283676, -928.074402, -0.527216733, 5.72490721e-10, 
     AutoWalkToPath(myPath)
          end)
 end) -- Dito nagsasara ang createTab
+
+
+
+
+RunService.Heartbeat:Connect(function()
+    -- Check kung naka-ON ang toggle at kung buhay ang player
+    if not _G.AutoSafeTP or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+    
+    local myPos = player.Character.HumanoidRootPart.Position
+    for _, monsterName in pairs(targetMonsters) do
+        local monster = workspace:FindFirstChild(monsterName)
+        if monster and monster:FindFirstChild("HumanoidRootPart") then
+            local distance = (monster.HumanoidRootPart.Position - myPos).Magnitude
+            if distance < DETECTION_RANGE then
+                player.Character.HumanoidRootPart.CFrame = SAFE_CFRAME
+                task.wait(1.5)
+            end
+        end
+    end
+end)
