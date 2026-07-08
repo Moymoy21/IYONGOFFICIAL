@@ -1,0 +1,577 @@
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+if playerGui:FindFirstChild("IOHUB_GUI") then
+    playerGui.IOHUB_GUI:Destroy()
+end
+
+local screenGui = Instance.new("ScreenGui", playerGui)
+screenGui.Name = "IOHUB_GUI"
+screenGui.ResetOnSpawn = false 
+
+-- // 1. CIRCLE OPEN BUTTON //
+local openBtn = Instance.new("TextButton", screenGui)
+openBtn.Size = UDim2.new(0, 50, 0, 50)
+openBtn.Position = UDim2.new(0, 20, 0.5, -25)
+openBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+openBtn.Text = "H"
+openBtn.TextColor3 = Color3.new(1,1,1)
+openBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1, 0)
+
+-- // 2. MAIN FRAME //
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 600, 0, 300)
+mainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BackgroundTransparency = 0.15
+mainFrame.Visible = false
+mainFrame.ClipsDescendants = true
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 15)
+local stroke = Instance.new("UIStroke", mainFrame)
+stroke.Color = Color3.fromRGB(50, 50, 50)
+stroke.Thickness = 2
+
+openBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+end)
+
+-- // 3. HEADER //
+local header = Instance.new("Frame", mainFrame)
+header.Size = UDim2.new(1, 0, 0, 50)
+header.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+header.BorderSizePixel = 0
+local gradient = Instance.new("UIGradient", header)
+gradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 40)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 20))
+})
+local title = Instance.new("TextLabel", header)
+title.Text = "⚡ IOHUB | DEVELOPED BY IYONGOFFICIAL ⚡"
+title.Size = UDim2.new(1, 0, 1, 0)
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.Code -- Fixed: CodeBold to Code
+title.TextSize = 16
+title.BackgroundTransparency = 1
+local line = Instance.new("Frame", header)
+line.Size = UDim2.new(1, 0, 0, 2)
+line.Position = UDim2.new(0, 0, 1, 0)
+line.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+line.BorderSizePixel = 0
+
+-- // 4. LAYOUT (I-REPLACE ANG LUMANG LAYOUT PART) //
+local body = Instance.new("Frame", mainFrame)
+body.Size = UDim2.new(1, 0, 1, -50)
+body.Position = UDim2.new(0, 0, 0, 50)
+body.BackgroundTransparency = 1
+
+-- SIDEBAR SCROLLING SETUP
+local sidebarScroll = Instance.new("ScrollingFrame", body)
+sidebarScroll.Size = UDim2.new(0.25, 0, 1, 0)
+sidebarScroll.BackgroundTransparency = 1
+sidebarScroll.ScrollBarThickness = 2
+sidebarScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+sidebarScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+local sidebarLayout = Instance.new("UIListLayout", sidebarScroll)
+sidebarLayout.Padding = UDim.new(0, 5)
+sidebarLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- RIGHT SCROLL SETUP
+local rightScroll = Instance.new("ScrollingFrame", body)
+rightScroll.Size = UDim2.new(0.75, 0, 1, 0)
+rightScroll.Position = UDim2.new(0.25, 0, 0, 0)
+rightScroll.BackgroundTransparency = 1
+rightScroll.ScrollBarThickness = 2
+rightScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+rightScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+local rightLayout = Instance.new("UIListLayout", rightScroll)
+rightLayout.Padding = UDim.new(0, 10)
+rightLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+_G.AutoSafeTP = false -- Dito natin ilalagay ang status (ON o OFF)
+
+RunService.Heartbeat:Connect(function()
+    -- Check kung naka-ON ang toggle at kung buhay ang player
+    if not _G.AutoSafeTP or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+    
+    local myPos = player.Character.HumanoidRootPart.Position
+    for _, monsterName in pairs(targetMonsters) do
+        local monster = workspace:FindFirstChild(monsterName)
+        if monster and monster:FindFirstChild("HumanoidRootPart") then
+            local distance = (monster.HumanoidRootPart.Position - myPos).Magnitude
+            if distance < DETECTION_RANGE then
+                player.Character.HumanoidRootPart.CFrame = SAFE_CFRAME
+                task.wait(1.5)
+            end
+        end
+    end
+end)
+
+createTab("Safety", function()
+    local toggleSafeTp = Instance.new("TextButton", rightScroll)
+    toggleSafeTp.Size = UDim2.new(1, -20, 0, 40)
+    toggleSafeTp.BackgroundColor3 = Color3.fromRGB(255, 100, 100) -- Red initially
+    toggleSafeTp.Text = "Auto-Safe TP: OFF"
+    toggleSafeTp.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", toggleSafeTp).CornerRadius = UDim.new(0, 8)
+    
+    toggleSafeTp.MouseButton1Click:Connect(function()
+        _G.AutoSafeTP = not _G.AutoSafeTP
+        
+        if _G.AutoSafeTP then
+            toggleSafeTp.Text = "Auto-Safe TP: ON"
+            toggleSafeTp.BackgroundColor3 = Color3.fromRGB(100, 255, 100) -- Green
+        else
+            toggleSafeTp.Text = "Auto-Safe TP: OFF"
+            toggleSafeTp.BackgroundColor3 = Color3.fromRGB(255, 100, 100) -- Red
+        end
+    end)
+end)
+
+
+local function AutoWalkToPath(cframePoints)
+    local character = player.Character
+    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    -- Noclip On
+    local noclipConnection = RunService.Stepped:Connect(function()
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then part.CanCollide = false end
+        end
+    end)
+
+    -- Loop sa bawat CFrame
+    for _, cf in pairs(cframePoints) do
+        hrp.CFrame = cf
+        task.wait(0.1) -- Adjustable: mas mababa, mas mabilis
+    end
+
+    -- Noclip Off
+    noclipConnection:Disconnect()
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then part.CanCollide = true end
+    end
+end
+
+
+-- // FUNCTIONS //
+local function CreateTP(name, cframe)
+	local btn = Instance.new("TextButton", rightScroll)
+	btn.Size = UDim2.new(1, -20, 0, 40)
+	btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	btn.Text = name
+	btn.TextColor3 = Color3.new(1,1,1)
+	btn.Font = Enum.Font.GothamMedium
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+	btn.MouseButton1Click:Connect(function()
+		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			player.Character.HumanoidRootPart.CFrame = cframe
+		end
+	end)
+end
+
+local function CreateSectionTitle(name)
+	local label = Instance.new("TextLabel", rightScroll)
+	label.Size = UDim2.new(1, 0, 0, 30)
+	label.Text = "  " .. name
+	label.TextColor3 = Color3.fromRGB(100, 150, 255)
+	label.Font = Enum.Font.GothamBold
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.BackgroundTransparency = 1
+end
+
+-- // UPDATE SA FUNCTIONS //
+-- Palitan ang sidebar sa createTab function:
+local function createTab(name, contentFunc)
+	-- Dati ay 'sidebar', palitan ito ng 'sidebarScroll'
+	local btn = Instance.new("TextButton", sidebarScroll) 
+	btn.Size = UDim2.new(0.9, 0, 0, 45)
+	btn.Text = "  " .. name
+	btn.TextColor3 = Color3.fromRGB(150, 150, 150)
+	btn.BackgroundTransparency = 1
+	btn.Font = Enum.Font.GothamBold
+	btn.TextXAlignment = Enum.TextXAlignment.Left
+	btn.MouseButton1Click:Connect(function()
+		-- Dito rin, palitan ang 'sidebar' ng 'sidebarScroll'
+		for _, c in pairs(sidebarScroll:GetChildren()) do if c:IsA("TextButton") then c.TextColor3 = Color3.fromRGB(150, 150, 150) end end
+		btn.TextColor3 = Color3.new(1,1,1)
+		for _, c in pairs(rightScroll:GetChildren()) do if not c:IsA("UIListLayout") then c:Destroy() end end
+		contentFunc()
+	end)
+end
+
+
+
+local function CreateAllCodesBox()
+    local container = Instance.new("Frame", rightScroll)
+    container.Size = UDim2.new(1, -20, 0, 70)
+    container.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 8)
+    
+    local display = Instance.new("TextLabel", container)
+    display.Size = UDim2.new(0.65, 0, 1, 0)
+    display.Text = "[?][?][?][?][?][?]"
+    display.TextColor3 = Color3.new(1, 1, 1)
+    display.Font = Enum.Font.Code
+    display.TextSize = 18
+    display.BackgroundTransparency = 1
+    
+    local btn = Instance.new("TextButton", container)
+    btn.Size = UDim2.new(0.3, 0, 0.6, 0)
+    btn.Position = UDim2.new(0.67, 0, 0.2, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+    btn.Text = "GET ALL"
+    btn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
+    
+        btn.MouseButton1Click:Connect(function()
+        -- Ito ang listahan ng floors base sa iyong Explorer
+        local floors = {"6thFloor", "5thFloor", "4thFloor", "3rdFloor", "2ndFloor", "1stFloor"}
+        local resultText = ""
+        
+        for _, fName in pairs(floors) do
+            -- Sinusundan natin ang hierarchy na nakita sa Explorer: Section1 > PlayerObjective > CodeNumbers > [Floor] > SurfaceGui > Random
+            local folder = workspace:FindFirstChild("Section1")
+            local objective = folder and folder:FindFirstChild("PlayerObjective")
+            local codeNums = objective and objective:FindFirstChild("CodeNumbers")
+            local floor = codeNums and codeNums:FindFirstChild(fName)
+            local surfaceGui = floor and floor:FindFirstChild("SurfaceGui")
+            local randomLabel = surfaceGui and surfaceGui:FindFirstChild("Random")
+            
+            -- Kinukuha ang laman ng TextLabel
+            if randomLabel and randomLabel:IsA("TextLabel") then
+                -- Sinusubukan muna ang ContentText, kung wala ay Text
+                local code = (randomLabel.ContentText ~= "" and randomLabel.ContentText) or randomLabel.Text
+                resultText = resultText .. "[" .. code .. "]"
+            else
+                resultText = resultText .. "[?]" -- Kung hindi mahanap, lalabas ang [?]
+            end
+        end
+        
+        display.Text = resultText
+        display.TextColor3 = Color3.fromRGB(100, 255, 100) -- Magiging green pag-click
+    end)
+
+end
+
+
+
+createTab("SECTION1", function()
+    
+    CreateSectionTitle("Teleport Locations")
+    CreateTP("SKIP CAVE", CFrame.new(-1235.36902, 4.00000048, -2943.79761, 0.0479142852, 0, -0.998851478, 0, 1, 0, 0.998851478, 0, 0.0479142852))
+    CreateTP("Starter Cinematic", CFrame.new(-1155.50256, 4.00000095, -2934.6958))
+    CreateTP("Skip to White Door", CFrame.new(4944.86719, -64.27565, 1206.07715))
+    CreateTP("Floor 6 BOSS NPC", CFrame.new(4449.49902, 43.9929123, 1659.43604))
+   CreateSectionTitle("All Floor Codes")
+   CreateAllCodesBox()
+end)
+
+createTab("SECTION2", function()
+    CreateSectionTitle("Teleport Locations")
+    CreateTP("NPC1", CFrame.new(-1218.073, -165.374435, -963.733826, 0.604715049, 7.11412046e-15, 0.796441913, -3.91128602e-15, 1, -5.9626537e-15, -0.796441913, 4.90594495e-16, 0.604715049))
+    CreateTP("NPC2", CFrame.new(-1194.18591, -165.374435, -1003.34747, 0.0708335862, -1.11711369e-08, 0.997488141, 1.5711108e-09, 1, 1.10876996e-08, -0.997488141, 7.81782805e-10, 0.0708335862))
+    CreateTP("NPC3", CFrame.new(-1144.55237, -142.647232, -1037.26892, 0.999931157, 3.00928562e-08, 0.0117337871, -2.99023704e-08, 1, -1.64095812e-08, -0.0117337871, 1.60575837e-08, 0.999931157))
+    CreateTP("NPC4", CFrame.new(-1108.55176, -142.274261, -1038.53027, 0.996299922, -1.92125893e-09, 0.0859442279, 2.29395969e-09, 1, -4.23778213e-09, -0.0859442279, 4.41925474e-09, 0.996299922))
+    CreateTP("LEAVE THE MALL", CFrame.new(-1335.1084, -165.374435, -1118.14185, -0.087827906, 7.42749462e-09, -0.996135652, 2.10487155e-10, 1, 7.43774997e-09, 0.996135652, 4.43568238e-10, -0.087827906))
+    CreateTP("CAROUSEL", CFrame.new(-1284.86865, -141.74498, -1096.00964, -0.167772949, -1.23703159e-09, -0.985825658, -8.48931769e-09, 1, 1.89938648e-10, 0.985825658, 8.40085423e-09, -0.167772949))
+    CreateTP("SPEAKER", CFrame.new(-1230.00476, -166.651611, -1004.56494, 0, 0, -1, 0, 1, 0, 1, 0, 0))
+    CreateTP("END THE MALL", CFrame.new(-1424.72717, -118.009972, -938.393677, -0.418884575, 0.0159111526, -0.907900095, 1.98539896e-09, 0.999846458, 0.0175225325, 0.90803951, 0.00733991619, -0.418820262))
+   CreateTP("SKIP CHASE 1", CFrame.new(-3294.05835, -187.955933, -944.276062, -0.521288276, -3.49310647e-09, -0.85338068, -4.13962725e-10, 1, -3.84038756e-09, 0.85338068, -1.6486813e-09, -0.521288276))
+   CreateTP("SKIP CHASE 2", CFrame.new(-3911.04688, -252.090607, -1103.42798, 0.418543696, -0.0546392314, 0.90655154, 0.00858846679, 0.998382092, 0.056208808, -0.908155978, -0.0157399513, 0.418335795))
+end)
+
+
+createTab("ESP", function()
+    -- // MONSTER ESP //
+    local espBtn = Instance.new("TextButton", rightScroll)
+    espBtn.Size = UDim2.new(1, -20, 0, 40)
+    espBtn.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+    espBtn.Text = "Toggle Monster ESP"
+    espBtn.TextColor3 = Color3.new(1,1,1)
+    espBtn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", espBtn).CornerRadius = UDim.new(0, 8)
+    
+    local espEnabled = false
+    local targetMonsters = {["Tenome"] = true, ["Tsukiya"] = true, ["Rin"] = true}
+    local activeObjects = {}
+
+    local function createESP(model)
+        local h = Instance.new("Highlight", model)
+        h.FillColor = Color3.fromRGB(255, 50, 50)
+        h.OutlineColor = Color3.fromRGB(255, 255, 255)
+        h.Adornee = model
+        
+        local bg = Instance.new("BillboardGui", model)
+        bg.Name = "ESP_NameTag"
+        bg.Size = UDim2.new(0, 200, 0, 50)
+        bg.StudsOffset = Vector3.new(0, 3, 0)
+        bg.AlwaysOnTop = true
+        
+        local lbl = Instance.new("TextLabel", bg)
+        lbl.Size = UDim2.new(1, 0, 1, 0)
+        lbl.BackgroundTransparency = 1
+        lbl.TextColor3 = Color3.new(1, 1, 1)
+        lbl.TextStrokeTransparency = 0
+        lbl.Font = Enum.Font.GothamBold
+        lbl.Text = model.Name
+        
+        table.insert(activeObjects, h)
+        table.insert(activeObjects, bg)
+    end
+
+    espBtn.MouseButton1Click:Connect(function()
+        espEnabled = not espEnabled
+        if espEnabled then
+            espBtn.Text = "ESP: ON"
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if targetMonsters[obj.Name] then createESP(obj) end
+            end
+        else
+            espBtn.Text = "Toggle Monster ESP"
+            for _, obj in pairs(activeObjects) do if obj then obj:Destroy() end end
+            activeObjects = {}
+        end
+    end) -- <--- Dito dapat magsara ang MouseButton1Click ng Monster ESP
+
+    -- // COIN ESP //
+    local coinEspBtn = Instance.new("TextButton", rightScroll)
+    coinEspBtn.Size = UDim2.new(1, -20, 0, 40)
+    coinEspBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 50)
+    coinEspBtn.Text = "Toggle Coin ESP"
+    coinEspBtn.TextColor3 = Color3.new(0,0,0)
+    coinEspBtn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", coinEspBtn).CornerRadius = UDim.new(0, 8)
+    
+    -- // I-update ang Coin ESP sa loob ng iyong ESP Tab //
+    local coinEspEnabled = false
+    local coinESPObjects = {}
+
+    local function createCoinESP(part, index) -- Nagdagdag tayo ng 'index' parameter
+        local h = Instance.new("Highlight", part)
+        h.FillColor = Color3.fromRGB(255, 255, 0)
+        h.Adornee = part
+        
+        local bg = Instance.new("BillboardGui", part)
+        bg.Size = UDim2.new(0, 100, 0, 50)
+        bg.StudsOffset = Vector3.new(0, 2, 0)
+        bg.AlwaysOnTop = true
+        
+        local lbl = Instance.new("TextLabel", bg)
+        lbl.Size = UDim2.new(1, 0, 1, 0)
+        lbl.BackgroundTransparency = 1
+        lbl.TextColor3 = Color3.fromRGB(255, 255, 0)
+        lbl.TextStrokeTransparency = 0
+        lbl.Font = Enum.Font.GothamBold
+        lbl.Text = "Coin " .. index -- Dito na lalabas ang Coin 1, Coin 2, etc.
+        
+        table.insert(coinESPObjects, h)
+        table.insert(coinESPObjects, bg)
+    end
+
+    coinEspBtn.MouseButton1Click:Connect(function()
+        coinEspEnabled = not coinEspEnabled
+        if coinEspEnabled then
+            coinEspBtn.Text = "Coin ESP: ON"
+            local counter = 1 -- Mag-uumpisa sa 1
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj.Name == "Coin" and obj:IsA("BasePart") then
+                    createCoinESP(obj, counter) -- Ipapasa natin ang counter
+                    counter = counter + 1
+                end
+            end
+        else
+            coinEspBtn.Text = "Toggle Coin ESP"
+            for _, obj in pairs(coinESPObjects) do if obj then obj:Destroy() end end
+            coinESPObjects = {}
+        end
+    end)-- <--- Dito magsara ang MouseButton1Click ng Coin ESP
+
+    CreateSectionTitle("MALL SAFE LOCATIONS")
+    CreateTP("SAFE ESCALATOR", CFrame.new(-1160.70581, -149.304581, -1011.77954, 0.991296649, -7.29874339e-09, 0.131647274, 8.19504553e-09, 1, -6.26657481e-09, -0.131647274, 7.29089011e-09, 0.991296649))
+end) -- <--- Dito nagsasara ang mismong createTab
+
+
+
+createTab("Coin TP", function()
+    local container = rightScroll -- Dito natin ilalagay ang listahan
+    
+    local refreshBtn = Instance.new("TextButton", container)
+    refreshBtn.Size = UDim2.new(1, -20, 0, 40)
+    refreshBtn.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+    refreshBtn.Text = "Refresh Coin List"
+    refreshBtn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", refreshBtn).CornerRadius = UDim.new(0, 8)
+    
+    local function refreshList()
+        -- Burahin ang lumang listahan (iwanan ang refresh button)
+        for _, child in pairs(container:GetChildren()) do
+            if child:IsA("Frame") or (child:IsA("TextButton") and child ~= refreshBtn) then
+                child:Destroy()
+            end
+        end
+        
+        -- Hanapin ang folder ng coins
+        local coinFolder = workspace:FindFirstChild("Section2") 
+            and workspace.Section2:FindFirstChild("Floor2") 
+            and workspace.Section2.Floor2:FindFirstChild("Coins")
+            
+        if coinFolder then
+            local counter = 1
+            for _, coin in pairs(coinFolder:GetChildren()) do
+                -- Gumawa ng button para sa bawat coin
+                local btn = Instance.new("TextButton", container)
+                btn.Size = UDim2.new(1, -20, 0, 40)
+                btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                btn.TextColor3 = Color3.new(1, 1, 1)
+                btn.Text = "Coin " .. counter .. " [ Teleport ]"
+                btn.Font = Enum.Font.GothamMedium
+                Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+                
+                btn.MouseButton1Click:Connect(function()
+                    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        -- Teleport sa posisyon ng coin
+                        player.Character.HumanoidRootPart.CFrame = coin.CFrame
+                    end
+                end)
+                counter = counter + 1
+            end
+        else
+            local errorLabel = Instance.new("TextLabel", container)
+            errorLabel.Text = "Coins folder not found!"
+            errorLabel.TextColor3 = Color3.new(1, 0, 0)
+            errorLabel.BackgroundTransparency = 1
+        end
+    end
+    
+    refreshBtn.MouseButton1Click:Connect(refreshList)
+end)
+
+createTab("EyePunch TP", function()
+    local container = rightScroll
+    
+    local refreshBtn = Instance.new("TextButton", container)
+    refreshBtn.Size = UDim2.new(1, -20, 0, 40)
+    refreshBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 255)
+    refreshBtn.Text = "Refresh EyePunch List"
+    refreshBtn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", refreshBtn).CornerRadius = UDim.new(0, 8)
+    
+    local espEnabled = false
+    local espObjects = {}
+
+    local function refreshList()
+        -- Linisin ang old buttons (kung meron man)
+        for _, child in pairs(container:GetChildren()) do
+            if child:IsA("TextButton") and child ~= refreshBtn and child.Name ~= "ToggleEsp" then
+                child:Destroy()
+            end
+        end
+        
+        -- Path: Section2 > Floor1 > TimedTrial > 1
+        local folder = workspace:FindFirstChild("Section2") 
+            and workspace.Section2:FindFirstChild("Floor1")
+            and workspace.Section2.Floor1:FindFirstChild("TimedTrial")
+            and workspace.Section2.Floor1.TimedTrial:FindFirstChild("1")
+            
+        if folder then
+            local counter = 1
+            for _, obj in pairs(folder:GetChildren()) do
+                if obj.Name == "EyePunch" then
+                    -- Teleport Button
+                    local btn = Instance.new("TextButton", container)
+                    btn.Size = UDim2.new(1, -20, 0, 40)
+                    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                    btn.TextColor3 = Color3.new(1, 1, 1)
+                    btn.Text = "Eye " .. counter .. " [ Teleport ]"
+                    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+                    
+                    btn.MouseButton1Click:Connect(function()
+                        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                            player.Character.HumanoidRootPart.CFrame = obj.CFrame
+                        end
+                    end)
+                    
+                    -- ESP Logic (Highlight)
+                    -- ESP Logic (Highlight at Billboard Name)
+                    if espEnabled then
+                        -- Highlight
+                        local h = Instance.new("Highlight", obj)
+                        h.FillColor = Color3.fromRGB(255, 0, 255)
+                        h.Adornee = obj
+                        table.insert(espObjects, h)
+                        
+                        -- Billboard Name Tag
+                        local bg = Instance.new("BillboardGui", obj)
+                        bg.Size = UDim2.new(0, 100, 0, 50)
+                        bg.StudsOffset = Vector3.new(0, 2, 0)
+                        bg.AlwaysOnTop = true
+                        
+                        local lbl = Instance.new("TextLabel", bg)
+                        lbl.Size = UDim2.new(1, 0, 1, 0)
+                        lbl.BackgroundTransparency = 1
+                        lbl.TextColor3 = Color3.fromRGB(255, 0, 255)
+                        lbl.TextStrokeTransparency = 0
+                        lbl.Font = Enum.Font.GothamBold
+                        lbl.Text = "EYE " .. counter -- Dito na lalabas ang EYE 1, 2...
+                        
+                        table.insert(espObjects, bg) -- I-save ang Billboard para ma-destroy pag-off
+                    end
+                    
+                    counter = counter + 1
+                end
+            end
+        end
+    end
+    
+    -- Toggle ESP Button para sa EyePunch
+    local toggleEsp = Instance.new("TextButton", container)
+    toggleEsp.Name = "ToggleEsp"
+    toggleEsp.Size = UDim2.new(1, -20, 0, 40)
+    toggleEsp.BackgroundColor3 = Color3.fromRGB(150, 50, 255)
+    toggleEsp.Text = "Toggle Eye ESP"
+    toggleEsp.MouseButton1Click:Connect(function()
+        espEnabled = not espEnabled
+        refreshList() -- I-refresh para lumabas/mawala ang highlight
+    end)
+
+    refreshBtn.MouseButton1Click:Connect(refreshList)
+end)
+
+
+createTab("AutoPath", function()
+    local walkBtn = Instance.new("TextButton", rightScroll)
+    walkBtn.Size = UDim2.new(1, -20, 0, 40)
+    walkBtn.BackgroundColor3 = Color3.fromRGB(100, 255, 100)
+    walkBtn.Text = "Execute Fast Path"
+    walkBtn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", walkBtn).CornerRadius = UDim.new(0, 8)
+    
+    walkBtn.MouseButton1Click:Connect(function()
+    local myPath = {
+        CFrame.new(-2928.26074, -138.465103, -108.568626, -0.999734402, 0.00017009904, 0.0230455808, -2.60176377e-11, 0.999972761, -0.00738078309, -0.0230462085, -0.00737882266, -0.999707162),
+CFrame.new(-2928.39917, -135.694962, 50.0349464, -0.594213724, 0.0091658067, 0.804254949, 5.64865377e-10, 0.999935091, -0.0113959024, -0.804307222, -0.00677160081, -0.5941751),
+CFrame.new(-3008.91138, -140.179672, 87.5553513, 0.993406832, 0.0019555313, 0.114625864, -2.60496819e-10, 0.999854505, -0.0170576386, -0.114642546, 0.016945174, 0.993262291),
+CFrame.new(-3008.67065, -138.497925, -0.774988174, -0.00624508364, -0.0354343764, 0.999352515, 1.46141127e-10, 0.999372005, 0.0354350694, -0.999980509, 0.000221295108, -0.00624116138),
+CFrame.new(-3088.14453, -143.632645, -0.0454070866, -0.99891299, 0.00206420943, -0.0465686209, -8.68941141e-10, 0.999019027, 0.0442827232, 0.0466143489, 0.044234585, -0.99793309),
+CFrame.new(-3089.58179, -143.276489, 53.3059196, 0.0828702375, -0.0595610291, 0.994778872, 5.58714519e-10, 0.998212397, 0.0597666055, -0.996560335, -0.00495287217, 0.0827220976),
+CFrame.new(-3206.97119, -150.569458, -12.175499, -0.151350096, 0.00669922959, 0.988457501, -6.49352405e-10, 0.999977052, -0.00677730236, -0.98848021, -0.00102574599, -0.151346624),
+CFrame.new(-3460.80713, -164.307678, -39.4825897, 0.907151639, 0.00619205553, -0.420758307, -1.37976963e-09, 0.999891758, 0.0147148222, 0.420803875, -0.0133485748, 0.907053411),
+CFrame.new(-3305.27563, -165.797836, -387.346008, 0.491568476, -0.0137623185, 0.870730162, 4.12991463e-09, 0.999875128, 0.0158035159, -0.87083894, -0.00776850665, 0.491507083),
+CFrame.new(-3352.04956, -166.198288, -413.423248, 0.917502642, -0.00108065014, 0.397728205, -1.11448246e-10, 0.999996305, 0.00271704723, -0.397729665, -0.00249289814, 0.917499244),
+CFrame.new(-3333.13477, -167.494125, -485.173431, 0.422811955, -0.0259980001, 0.90584445, 2.89402458e-09, 0.99958837, 0.0286884774, -0.906217456, -0.0121298283, 0.42263791),
+CFrame.new(-3498.99805, -177.642105, -564.874451, -0.399333537, -0.053385023, 0.915250123, -4.6894677e-10, 0.998303235, 0.0582293756, -0.916805744, 0.0232529417, -0.398655951),
+CFrame.new(-3573.01953, -183.223511, -533.763184, 0.863133132, 0.00915226899, 0.504893482, -1.9742521e-09, 0.99983573, -0.0181241482, -0.504976451, 0.0156435501, 0.862991333),
+CFrame.new(-3708.28638, -190.443283, -807.373047, 0.895505488, -0.00257049501, -0.445043057, 1.15744547e-09, 0.999983311, -0.00577573571, 0.445050478, 0.00517220236, 0.895490527),
+CFrame.new(-3582.13672, -190.401215, -1063.47876, -0.429629356, -0.00181815226, -0.903003514, 5.39862322e-10, 0.999997973, -0.00201344606, 0.903005302, -0.00086503604, -0.429628491),
+CFrame.new(-3268.16968, -186.283676, -928.074402, -0.527216733, 5.72490721e-10, -0.849730849, 4.54493457e-11, 1, 6.45532738e-10, 0.849730849, 3.01715958e-10, -0.527216733)
+    }
+    AutoWalkToPath(myPath)
+         end)
+end) -- Dito nagsasara ang createTab
