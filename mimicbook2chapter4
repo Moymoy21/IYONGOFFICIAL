@@ -298,6 +298,11 @@ createTab("ESP", function()
         espEnabled = not espEnabled
         if espEnabled then
             espBtn.Text = "ESP: ON"
+            -- FORCE CLEAN: Bura lahat ng lumang tags bago gumawa ng bago
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj.Name == "ESP_NameTag" then obj:Destroy() end
+            end
+            
             for _, obj in pairs(workspace:GetDescendants()) do
                 if targetMonsters[obj.Name] then createESP(obj) end
             end
