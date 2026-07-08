@@ -93,8 +93,6 @@ rightLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
-_G.AutoSafeTP = false -- Dito natin ilalagay ang status (ON o OFF)
-
 
 
 
@@ -566,29 +564,29 @@ CFrame.new(-3268.16968, -186.283676, -928.074402, -0.527216733, 5.72490721e-10, 
 end) -- Dito nagsasara ang createTab
 
 
+-- Ilagay ang values nang manual para hindi siya mag-nil
+_G.AutoSafeTP = false
+local SAFE_CFRAME = CFrame.new(-1160.7, -149.3, -1011.8) -- Pinayak ko para sigurado
+local DETECTION_RANGE = 50 -- Lakihan muna natin para ma-test
 
 
 -- // I-define ang listahan sa loob mismo o bago ang loop para sigurado
 local targetMonsters = {"Tenome", "Tsukiya", "Rin"} -- Siguraduhing nandito ito!
 
 RunService.Heartbeat:Connect(function()
-    -- 1. I-check ang toggle (Siguraduhing naka-initialize ang _G)
     if not _G.AutoSafeTP then return end
     
-    -- 2. I-check ang player
     local char = player.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-    local myPos = char.HumanoidRootPart.Position
-
-    -- 3. Siguraduhin na ang targetMonsters ay isang table
-    if type(targetMonsters) == "table" then
-        for _, monsterName in pairs(targetMonsters) do
-            local monster = workspace:FindFirstChild(monsterName)
-            
-            if monster and monster:FindFirstChild("HumanoidRootPart") then
-                local dist = (monster.HumanoidRootPart.Position - myPos).Magnitude
-                
+    
+    -- I-scan lahat ng nasa Workspace para makita natin kung ano ang pangalan ng monster
+    for _, obj in pairs(workspace:GetChildren()) do
+        if obj:IsA("Model") and (obj.Name == "Tenome" or obj.Name == "Tsukiya" or obj.Name == "Rin") then
+            local root = obj:FindFirstChild("HumanoidRootPart")
+            if root then
+                local dist = (root.Position - char.HumanoidRootPart.Position).Magnitude
                 if dist < DETECTION_RANGE then
+                    print("Monster detected: " .. obj.Name .. " at distansya: " .. math.floor(dist))
                     char.HumanoidRootPart.CFrame = SAFE_CFRAME
                     task.wait(1.5)
                 end
