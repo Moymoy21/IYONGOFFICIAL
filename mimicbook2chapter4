@@ -567,29 +567,36 @@ end) -- Dito nagsasara ang createTab
 -- Ilagay ang values nang manual para hindi siya mag-nil
 _G.AutoSafeTP = false
 local SAFE_CFRAME = CFrame.new(-1160.7, -149.3, -1011.8) -- Pinayak ko para sigurado
-local DETECTION_RANGE = 50 -- Lakihan muna natin para ma-test
 
 
 -- // I-define ang listahan sa loob mismo o bago ang loop para sigurado
 local targetMonsters = {"Tenome", "Tsukiya", "Rin"} -- Siguraduhing nandito ito!
 
+-- // I-setup ang Detection Range
+local DETECTION_RANGE = 50 
+
 RunService.Heartbeat:Connect(function()
     if not _G.AutoSafeTP then return end
-    
     local char = player.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     
-    -- I-scan lahat ng nasa Workspace para makita natin kung ano ang pangalan ng monster
-    for _, obj in pairs(workspace:GetChildren()) do
-        if obj:IsA("Model") and (obj.Name == "Tenome" or obj.Name == "Tsukiya" or obj.Name == "Rin") then
-            local root = obj:FindFirstChild("HumanoidRootPart")
-            if root then
-                local dist = (root.Position - char.HumanoidRootPart.Position).Magnitude
-                if dist < DETECTION_RANGE then
-                    print("Monster detected: " .. obj.Name .. " at distansya: " .. math.floor(dist))
-                    char.HumanoidRootPart.CFrame = SAFE_CFRAME
-                    task.wait(1.5)
-                end
+    for _, monsterName in pairs(targetMonsters) do
+        local monster = workspace:FindFirstChild(monsterName)
+        
+        if monster and monster:FindFirstChild("HumanoidRootPart") then
+            local dist = (monster.HumanoidRootPart.Position - char.HumanoidRootPart.Position).Magnitude
+            
+            -- // 1. Update ESP Label na may Studs (Dito mo makikita sa screen)
+            -- I-update ang text ng iyong ESP BillboardGui kung meron ka na
+            if monster:FindFirstChild("BillboardGui") then
+                monster.BillboardGui.TextLabel.Text = monsterName .. " " .. math.floor(dist) .. " studs"
+            end
+            
+            -- // 2. Teleport Logic (Kung 50 studs pababa)
+            if dist <= DETECTION_RANGE then
+                char.HumanoidRootPart.CFrame = SAFE_CFRAME
+                print("DANGER! " .. monsterName .. " is " .. math.floor(dist) .. " studs away. Teleporting!")
+                task.wait(1.5)
             end
         end
     end
